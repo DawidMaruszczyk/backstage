@@ -62,6 +62,10 @@ export const EntityPickerFieldSchema = makeFieldSchemaFromZod(
       .or(entityQueryFilterExpressionSchema)
       .optional()
       .describe('List of key-value filter expression for entities'),
+    searchByTitle: z
+      .boolean()
+      .optional()
+      .describe('Whether to show the metadata.title and therefor be able to search for Entities by title. Defaults to false'),
   }),
 );
 

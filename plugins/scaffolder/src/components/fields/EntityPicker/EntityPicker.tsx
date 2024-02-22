@@ -67,7 +67,7 @@ export const EntityPicker = (props: EntityPickerProps) => {
   const catalogApi = useApi(catalogApiRef);
 
   const { value: entities, loading } = useAsync(async () => {
-    const fields = ['metadata.name', 'metadata.namespace', 'kind'];
+    const fields = ['metadata.name', 'metadata.namespace', 'metadata.title', 'kind'];
     const { items } = await catalogApi.getEntities(
       catalogFilter
         ? { filter: catalogFilter, fields }
@@ -151,12 +151,20 @@ export const EntityPicker = (props: EntityPickerProps) => {
         loading={loading}
         onChange={onSelect}
         options={entities || []}
-        getOptionLabel={option =>
-          // option can be a string due to freeSolo.
-          typeof option === 'string'
-            ? option
-            : humanizeEntityRef(option, { defaultKind, defaultNamespace })!
-        }
+        // In this part, we check if the entity has a title. If so, we copy the entity and set the name to title,
+        // so that we can use humanizeEntityRef but without changing the original Entity
+        getOptionLabel={option => {
+          const searchByTitle = uiSchema['ui:options']?.searchByTitle
+          let optionCopy = option;
+          if (searchByTitle && option?.metadata?.title) {
+              optionCopy = {...option, metadata: {name: option.metadata.title}}
+          }
+          return (
+              // option can be a string due to freeSolo.
+              typeof optionCopy === 'string'
+                  ? optionCopy
+                  : humanizeEntityRef(optionCopy, {defaultKind, defaultNamespace})!)
+      }}
         autoSelect
         freeSolo={allowArbitraryValues}
         renderInput={params => (
